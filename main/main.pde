@@ -1,108 +1,78 @@
+//Importação da estrutura Deque 
+import java.util.Deque;
+import java.util.ArrayDeque;
+
+//Variaveis responsaveis por controlar as posições
 int posY = 0;
-int posX = 0;
-int auxVidaSnake = 0;
-int posXvida = int(random(0, 1000));
+int posX = 100;
+int dataPos = 0;
 int posYvida = 0;
+int posXvida = int(random(100, 800));
+
+//Variaveis responsaveis por controlar as imagens e a fonte
+PImage coracao;
+PImage quadrado;
+PImage snakeHead;
+PImage snakeBody;
+PFont font;
+int corAmarelo = #d89e0d;
+
+//Variaveis auxiliares 
+int auxVidaSnake = 0;
+int controlaVelo = 1;
+
+//Criação dos objetos
 life vidas;
-blocos[] blocos = new blocos [10];
-snake[] snake = new snake[10];
+blocos[] blocos = new blocos [8];
+Deque<snake> snake = new ArrayDeque<snake>();
+
+
 void setup() {
   size(1000, 1000);
+  coracao = loadImage("coracao.png");
+  quadrado = loadImage("quadrado.png");
+  snakeHead = loadImage("snake.png");
+  snakeBody = loadImage("snakeBody.png");
+  font = createFont("fonte.ttf", 25);
+  //gerando os primeiros blocos,vida e criando a snake  
   geraBlocos();
   geraVidas();
-
-  for (int j = 0; j <10; j++) {
-    snake[j] = new snake();
-  }
+  snake.add(new snake());
 }
 
 void draw() {
-  background(0);
+  //Adicionando uma posição aleatoria para o X da vida
+  posXvida = int(random(100, 900));
+  
+  background(#001a01);
+  fill(corAmarelo);
+  textSize(100);
+  text("Snake vs block", 150, 100);
+  fill(#3e0600);
+  rect(0, 0, 100, 1000);
+  fill(#3e0600);
+  rect(900, 0, 100, 1000);
+  
+  //chamando as funções
+  removeSnake();
+  adicionaSnake();
   controlaVidas();
   mostraSnake();
   mostraBlocos();
   verificaColicao(blocos, snake);
-  for (int i = 0; i < 10; i++) {
+  gameOver();
+  
+  //Verificando se os blocos chegaram no fim da tela 
+  for (int i = 0; i < blocos.length; i++) {
     if (blocos[i].y > 1000) {
-      posX = 0;
+      posX = 100;
+      controlaVelo+=2;
       geraBlocos();
       mostraBlocos();
-      if (vidas.valorVida < 0) {
-        geraVidas();
-      }
     }
   }
-}
-void mostraBlocos() {
-  for (int i = 0; i < 10; i++) {
-    blocos[i].mostrar(5);
-  }
-}
-void geraBlocos() {
-  for (int i=0; i <10; i++) {
-    blocos[i] = new blocos(posX, -150, 100, 100);
-    posX+=100;
-    posY+=100;
-  }
-}
-void geraVidas() {
-  vidas = new life(posXvida, posYvida, 30, 30);
-}
-void controlaVidas() {
-  vidas.mostraVida();
-  if (colidir(vidas, snake[0])) {
-    vidas.hit = true;
-    snake[0].hit = true;
-    vidas.valorVida-=1;
-    auxVidaSnake = snake[0].vidaSnake;
-    snake[0].vidaSnake+=1;
-    if (vidas.valorVida < 0) {
-
-      snake[0].hit = false;
-      snake[0].vidaSnake = auxVidaSnake;
-    }
-  }
-}
-void mostraSnake() {
-  if (snake[0].vidaSnake > 0) {
-    snake[0].mostrar();
-  }
-}
-
-boolean colidir(blocos A, snake B) {
-  return (A.x + A.w >= B.x && A.x <= B.x + B.w && A.y + A.h >= B.y && A.y <= B.y + B.h) ;
-}
-void verificaColicao(blocos objBlocos[], snake objSnake[]) {
-  for (int i=0; i< objBlocos.length; i++) {
-    if (colidir(objBlocos[i], objSnake[0])) {
-      objBlocos[0].hit = true;
-      objBlocos[1].hit = true;
-      objBlocos[2].hit = true;
-      objBlocos[3].hit = true;
-      objBlocos[4].hit = true;
-      objBlocos[5].hit = true;
-      objBlocos[6].hit = true;
-      objBlocos[7].hit = true;
-      objBlocos[8].hit = true;
-      objBlocos[9].hit = true;
-      objSnake[0].hit = true;
-      auxVidaSnake = objSnake[0].vidaSnake;
-      objSnake[0].vidaSnake -=1;
-      objBlocos[i].vidaBloco-=1;
-      if (objBlocos[i].vidaBloco < 0) {
-        objBlocos[0].hit = false;
-        objBlocos[1].hit = false;
-        objBlocos[2].hit = false;
-        objBlocos[3].hit = false;
-        objBlocos[4].hit = false;
-        objBlocos[5].hit = false;
-        objBlocos[6].hit = false;
-        objBlocos[7].hit = false;
-        objBlocos[8].hit = false;
-        objBlocos[9].hit = false;
-        objSnake[0].hit = false;
-        objSnake[0].vidaSnake = auxVidaSnake;
-      }
-    }
+  //Verificando se a vida foi recolhida e se ela chegou no fim da tela
+  if (vidas.valorVida < 0 || vidas.y > 1000) {
+    geraVidas();
   }
 }
